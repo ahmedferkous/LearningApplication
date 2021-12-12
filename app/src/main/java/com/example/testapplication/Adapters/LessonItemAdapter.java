@@ -29,6 +29,10 @@ import java.util.concurrent.TimeUnit;
 
 public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.ViewHolder> {
     private static final String TAG = "LessonItemAdapter";
+    public static final String BEGINNER = "Beginner";
+    public static final String INTERMEDIATE = "Intermediate";
+    public static final String ADVANCED = "Advanced";
+
     private ArrayList<LessonItem> lessonItems = new ArrayList<>();
     private final Context context;
 
@@ -39,6 +43,7 @@ public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.Vi
     public void setLessonItems(ArrayList<LessonItem> lessonItems) {
         this.lessonItems = lessonItems;
         notifyDataSetChanged();
+        Log.d(TAG, "setLessonItems: " + lessonItems.size());
     }
 
     @NonNull
@@ -81,6 +86,22 @@ public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.Vi
                 Log.d(TAG, "onClick: " + boundItem.getFileUris().get(0).getPath());
             }
         });
+
+        switch(boundItem.getDifficulty()) {
+            case BEGINNER:
+                holder.imgViewBackground.setBackgroundColor(context.getResources().getColor(R.color.darkGreen));
+                break;
+            case INTERMEDIATE:
+                holder.imgViewBackground.setBackgroundColor(context.getResources().getColor(R.color.lightBlue));
+                break;
+            case ADVANCED:
+                holder.imgViewBackground.setBackgroundColor(context.getResources().getColor(R.color.lightRed));
+                break;
+            default:
+                break;
+        }
+
+
     }
 
     @Override
@@ -111,7 +132,7 @@ public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.Vi
     public static class ViewHolder extends RecyclerView.ViewHolder {
         private final RelativeLayout parent;
         private final TextView txtDifficulty, txtDueTime, txtLessonName, txtLessonDesc;
-        private final ImageView imgViewDropdown, imgViewDropup;
+        private final ImageView imgViewDropdown, imgViewDropup, imgViewBackground;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -122,6 +143,7 @@ public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.Vi
             txtLessonDesc = itemView.findViewById(R.id.txtLessonDesc);
             imgViewDropdown = itemView.findViewById(R.id.imgViewDropdown);
             imgViewDropup = itemView.findViewById(R.id.imgViewDropup);
+            imgViewBackground = itemView.findViewById(R.id.imgViewBackground);
         }
     }
 }

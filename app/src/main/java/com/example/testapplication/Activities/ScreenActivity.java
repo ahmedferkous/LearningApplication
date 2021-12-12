@@ -5,6 +5,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.drawerlayout.widget.DrawerLayout;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
@@ -20,6 +21,7 @@ import android.widget.Toast;
 
 import com.example.testapplication.Application.AppContainer;
 import com.example.testapplication.Application.MyApplication;
+import com.example.testapplication.Fragments.FragmentNotes;
 import com.example.testapplication.Items.LoginResponse;
 import com.example.testapplication.R;
 import com.example.testapplication.ViewModels.LessonItemViewModel;
@@ -72,7 +74,6 @@ public class ScreenActivity extends AppCompatActivity {
                 setupLoginChangeCheck(userID, passwordMD5);
             }
         }
-
     }
 
     private void setupLoginChangeCheck(String userID, String passwordMD5) {
@@ -118,6 +119,7 @@ public class ScreenActivity extends AppCompatActivity {
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
                 switch (item.getItemId()) {
                     case R.id.ic_notes:
+                        transactToNotes();
                         break;
                     case R.id.ic_tests:
                         break;
@@ -140,10 +142,12 @@ public class ScreenActivity extends AppCompatActivity {
 
     private void initBottomNavigationView() {
         bottomNavigationView.setSelectedItemId(R.id.notes);
+        transactToNotes();
 
         bottomNavigationView.setItemOnTouchListener(R.id.notes, new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                transactToNotes();
                 return true;
             }
         });
@@ -161,5 +165,11 @@ public class ScreenActivity extends AppCompatActivity {
                 return true;
             }
         });
+    }
+
+    private void transactToNotes() {
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, new FragmentNotes());
+        transaction.commit();
     }
 }

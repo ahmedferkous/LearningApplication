@@ -2,6 +2,7 @@ package com.example.testapplication.Repositories;
 
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -29,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 
 public class FirebaseRepository  {
+    private static final String TAG = "FirebaseRepository";
+
     public static final String NOTES = "notes";
     public static final String DATE_POSTED = "datePosted";
     public static final String DIFFICULTY = "difficulty";
@@ -53,6 +56,7 @@ public class FirebaseRepository  {
                 List<DocumentChange> documentChangeList = value.getDocumentChanges();
 
                 for (int i = 0; i < documentChangeList.size(); i++) {
+                    Log.d(TAG, "onEvent: " + documentChangeList.size() + " " + i);
                     DocumentChange c = documentChangeList.get(i);
                     boolean isFinalItem = i == (documentChangeList.size() - 1);
 
@@ -71,7 +75,7 @@ public class FirebaseRepository  {
             }
 
             @Override
-            public void onImageUrisRetrievedResult(LessonItem lessonItem, boolean lastItem) {
+            public synchronized void onImageUrisRetrievedResult(LessonItem lessonItem, boolean lastItem) {
                 lessonItemList.add(lessonItem);
                 if (lastItem) {
                     lessonItemListMutableLiveData.postValue(lessonItemList);
@@ -104,8 +108,9 @@ public class FirebaseRepository  {
                     List<StorageReference> imageStorageRefsList = task.getResult().getItems();
 
                     for (StorageReference ref : imageStorageRefsList) {
-                        Uri imageUri = ref.getDownloadUrl().getResult();
-                        uriList.add(imageUri);
+                        String imageUri = ref.getName();
+                        //Uri imageUri = ref.getDownloadUrl().getResult()
+                        uriList.add(Uri.parse(imageUri));
                     }
 
                     lessonItem.setFileUris(uriList);

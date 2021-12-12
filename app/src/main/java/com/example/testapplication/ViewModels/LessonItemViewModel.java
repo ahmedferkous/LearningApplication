@@ -1,5 +1,7 @@
 package com.example.testapplication.ViewModels;
 
+import android.util.Log;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -10,12 +12,15 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
 public class LessonItemViewModel extends ViewModel {
+    private static final String TAG = "LessonItemViewModel";
+
     private final MutableLiveData<List<LessonItem>> lessonItemListMutableLiveData;
     private final FirebaseRepository repository;
 
     public LessonItemViewModel() {
         repository = new FirebaseRepository();
         lessonItemListMutableLiveData = repository.getLessonItemListMutableLiveData();
+        Log.d(TAG, "LessonItemViewModel: ");
     }
 
     public MutableLiveData<List<LessonItem>> getLiveLessonItemData() {
