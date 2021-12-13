@@ -43,7 +43,6 @@ public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.Vi
     public void setLessonItems(ArrayList<LessonItem> lessonItems) {
         this.lessonItems = lessonItems;
         notifyDataSetChanged();
-        Log.d(TAG, "setLessonItems: " + lessonItems.size());
     }
 
     @NonNull
@@ -58,7 +57,7 @@ public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.Vi
         LessonItem boundItem = lessonItems.get(position);
 
         holder.txtDifficulty.setText(boundItem.getDifficulty());
-        holder.txtDueTime.setText(calculateDurationLeft(boundItem.getDatePosted()));
+        holder.txtDueTime.setText(boundItem.getDatePosted());
         holder.txtLessonName.setText(boundItem.getLessonName());
         holder.txtLessonDesc.setText(boundItem.getLessonDesc());
 
@@ -100,7 +99,6 @@ public class LessonItemAdapter extends RecyclerView.Adapter<LessonItemAdapter.Vi
             default:
                 break;
         }
-
 
     }
 

@@ -27,7 +27,6 @@ public class FragmentNotes extends Fragment {
     private static final String TAG = "FragmentNotes";
 
     private LessonItemViewModel lessonItemViewModel;
-    private RecyclerView recView;
     private LessonItemAdapter adapter;
     @Nullable
     @Override
@@ -40,7 +39,6 @@ public class FragmentNotes extends Fragment {
             @Override
             public void onChanged(List<LessonItem> lessonItems) {
                 adapter.setLessonItems((ArrayList<LessonItem>) lessonItems);
-                Log.d(TAG, "onChanged: " + lessonItems.size());
             }
         });
 
@@ -49,7 +47,7 @@ public class FragmentNotes extends Fragment {
 
     private void initViews(View view) {
         lessonItemViewModel = new ViewModelProvider(requireActivity()).get(LessonItemViewModel.class);
-        recView = view.findViewById(R.id.recView);
+        RecyclerView recView = view.findViewById(R.id.recView);
         recView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new LessonItemAdapter(getContext());
         recView.setAdapter(adapter);

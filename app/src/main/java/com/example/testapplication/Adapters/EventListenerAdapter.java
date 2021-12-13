@@ -19,7 +19,8 @@ public abstract class EventListenerAdapter implements EventListener<QuerySnapsho
     }
 
     @Override
-    public void onImageUrisRetrievedResult(LessonItem lessonItem, boolean lastItem) {
+    public void onImageUriListRetrievedResult(LessonItem lessonItem, int sizeOfDocuments) {
 
     }
+
 }

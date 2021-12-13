@@ -35,9 +35,9 @@
             android:icon="@drawable/ic_settings"/>
 
         <item
-            android:title="Switch accounts"
-            android:id="@+id/ic_switch"
-            android:icon="@drawable/ic_switchaccounts"/>
+            android:title="Log out"
+            android:id="@+id/ic_logout"
+            android:icon="@drawable/ic_logout"/>
 
     </group>
 

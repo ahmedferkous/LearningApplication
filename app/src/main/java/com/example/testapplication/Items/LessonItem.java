@@ -5,18 +5,16 @@ import android.net.Uri;
 import java.util.ArrayList;
 
 public class LessonItem {
+    private final String uniqueDocumentId;
     private String lessonName, lessonDesc, datePosted, difficulty;
     private ArrayList<Uri> fileUris;
 
-    public LessonItem(String lessonName, String lessonDesc, String datePosted, String difficulty, ArrayList<Uri> fileUris) {
-        this.lessonName = lessonName;
-        this.lessonDesc = lessonDesc;
-        this.datePosted = datePosted;
-        this.difficulty = difficulty;
-        this.fileUris = fileUris;
+    public LessonItem(String uniqueDocumentId) {
+        this.uniqueDocumentId = uniqueDocumentId;
     }
 
-    public LessonItem() {
+    public String getUniqueDocumentId() {
+        return uniqueDocumentId;
     }
 
     public ArrayList<Uri> getFileUris() {

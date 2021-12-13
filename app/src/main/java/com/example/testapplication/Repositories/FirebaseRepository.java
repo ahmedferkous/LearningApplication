@@ -14,10 +14,7 @@ import com.example.testapplication.Items.LessonItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
-import com.google.firebase.firestore.DocumentChange;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -38,6 +35,7 @@ public class FirebaseRepository  {
     public static final String LESSON_DESCRIPTION = "lessonDescription";
     public static final String LESSON_NAME = "lessonName";
 
+    private List<LessonItem> lessonItemList;
     private final MutableLiveData<List<LessonItem>> lessonItemListMutableLiveData;
     private final FirebaseFirestore firebaseFirestore;
 
@@ -47,37 +45,36 @@ public class FirebaseRepository  {
     }
 
     public MutableLiveData<List<LessonItem>> getLessonItemListMutableLiveData() {
-        List<LessonItem> lessonItemList = new ArrayList<>();
-
         CollectionReference collectionReference = firebaseFirestore.collection(NOTES);
         collectionReference.addSnapshotListener(new EventListenerAdapter() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                List<DocumentChange> documentChangeList = value.getDocumentChanges();
+                lessonItemList = new ArrayList<>();
+                List<DocumentSnapshot> documentSnapshotList = value.getDocuments();
 
-                for (int i = 0; i < documentChangeList.size(); i++) {
-                    Log.d(TAG, "onEvent: " + documentChangeList.size() + " " + i);
-                    DocumentChange c = documentChangeList.get(i);
-                    boolean isFinalItem = i == (documentChangeList.size() - 1);
+                for (int i = 0; i < documentSnapshotList.size(); i++) {
+                    Log.d(TAG, "onEvent: " + documentSnapshotList.size() + " " + i);
+                    DocumentSnapshot c = documentSnapshotList.get(i);
+                    String documentId = c.getId();
 
-                    LessonItem lessonItem = new LessonItem();
+                    LessonItem lessonItem = new LessonItem(documentId);
 
-                    Map<String, Object> documentMap = c.getDocument().getData();
+                    Map<String, Object> documentMap = c.getData();
                     lessonItem.setDatePosted((String) documentMap.get(DATE_POSTED));
                     lessonItem.setDifficulty((String) documentMap.get(DIFFICULTY));
                     lessonItem.setLessonDesc((String) documentMap.get(LESSON_DESCRIPTION));
                     lessonItem.setLessonName((String) documentMap.get(LESSON_NAME));
 
-                    String documentId = c.getDocument().getId();
-                    new RetrieveImageAsyncTask(this, lessonItem, isFinalItem).execute(documentId);
+                    RetrieveImage retrieveImage = new RetrieveImage(this, lessonItem, documentSnapshotList.size());
+                    retrieveImage.get(documentId);
                 }
 
             }
 
             @Override
-            public synchronized void onImageUrisRetrievedResult(LessonItem lessonItem, boolean lastItem) {
+            public void onImageUriListRetrievedResult(LessonItem lessonItem, int sizeOfDocuments) {
                 lessonItemList.add(lessonItem);
-                if (lastItem) {
+                if (lessonItemList.size() == sizeOfDocuments) {
                     lessonItemListMutableLiveData.postValue(lessonItemList);
                 }
             }
@@ -85,40 +82,44 @@ public class FirebaseRepository  {
         return lessonItemListMutableLiveData;
     }
 
-    private static class RetrieveImageAsyncTask extends AsyncTask<String, List<Uri>, Void> {
-        private final OnRetrievedImageUris onRetrievedImageUris;
-        private final LessonItem lessonItem;
-        private final boolean finalImageItemRetrieval;
-
-        public RetrieveImageAsyncTask(OnRetrievedImageUris onRetrievedImageUris, LessonItem lessonItem, boolean finalImageItemRetrieval) {
-            this.onRetrievedImageUris = onRetrievedImageUris;
-            this.lessonItem = lessonItem;
-            this.finalImageItemRetrieval = finalImageItemRetrieval;
+    private static class RetrieveImage implements OnCompleteListener<Uri> {
+        @Override
+        public void onComplete(@NonNull Task<Uri> task) {
+            uriList.add(task.getResult());
+            if (uriList.size() == imageRefListSize) {
+                lessonItem.setFileUris(uriList);
+                onRetrievedImageUris.onImageUriListRetrievedResult(lessonItem, sizeOfDocuments);
+            }
         }
 
-        @Override
-        protected Void doInBackground(String... strings) {
-            String documentId = strings[0];
+        private final OnRetrievedImageUris onRetrievedImageUris;
+        private final LessonItem lessonItem;
+        private final ArrayList<Uri> uriList;
+        private int imageRefListSize;
+        private final int sizeOfDocuments;
 
+        public RetrieveImage(OnRetrievedImageUris onRetrievedImageUris, LessonItem lessonItem, int sizeOfDocuments) {
+            this.onRetrievedImageUris = onRetrievedImageUris;
+            this.lessonItem = lessonItem;
+            this.sizeOfDocuments = sizeOfDocuments;
+            this.uriList = new ArrayList<>();
+        }
+
+        public void get(String documentId) {
             StorageReference storageReference = FirebaseStorage.getInstance().getReference().child(NOTES).child(documentId);
             storageReference.listAll().addOnCompleteListener(new OnCompleteListener<ListResult>() {
                 @Override
                 public void onComplete(@NonNull Task<ListResult> task) {
-                    ArrayList<Uri> uriList = new ArrayList<>();
                     List<StorageReference> imageStorageRefsList = task.getResult().getItems();
+                    imageRefListSize = imageStorageRefsList.size();
 
                     for (StorageReference ref : imageStorageRefsList) {
-                        String imageUri = ref.getName();
-                        //Uri imageUri = ref.getDownloadUrl().getResult()
-                        uriList.add(Uri.parse(imageUri));
+                        ref.getDownloadUrl().addOnCompleteListener(RetrieveImage.this);
                     }
-
-                    lessonItem.setFileUris(uriList);
-                    onRetrievedImageUris.onImageUrisRetrievedResult(lessonItem, finalImageItemRetrieval);
                 }
             });
-            return null;
         }
+
     }
 
 }

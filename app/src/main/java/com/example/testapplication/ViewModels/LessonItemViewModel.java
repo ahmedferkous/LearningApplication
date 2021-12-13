@@ -20,7 +20,6 @@ public class LessonItemViewModel extends ViewModel {
     public LessonItemViewModel() {
         repository = new FirebaseRepository();
         lessonItemListMutableLiveData = repository.getLessonItemListMutableLiveData();
-        Log.d(TAG, "LessonItemViewModel: ");
     }
 
     public MutableLiveData<List<LessonItem>> getLiveLessonItemData() {

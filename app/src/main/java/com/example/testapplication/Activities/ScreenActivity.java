@@ -86,14 +86,16 @@ public class ScreenActivity extends AppCompatActivity {
             public void onChanged(LoginResponse loginResponse) {
                 Log.d(TAG, "onChanged: " + loginResponse.getResponse());
                 if (loginResponse.getResponse() == LoginResponse.FORCED_SIGN_OUT) {
-                    navigateBackToLoginActivity();
+                    navigateBackToLoginActivity(true);
                 }
             }
         });
     }
 
-    private void navigateBackToLoginActivity() {
-        Toast.makeText(this, "Re-login required.", Toast.LENGTH_SHORT).show();
+    private void navigateBackToLoginActivity(boolean forced) {
+        if (forced) {
+            Toast.makeText(this, "Re-login required.", Toast.LENGTH_SHORT).show();
+        }
         Intent loginActivityIntent = new Intent(this, LoginActivity.class);
         loginActivityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(loginActivityIntent);
@@ -127,7 +129,17 @@ public class ScreenActivity extends AppCompatActivity {
                         break;
                     case R.id.ic_settings:
                         break;
-                    case R.id.ic_switch:
+                    case R.id.ic_logout:
+                        AlertDialog.Builder builder = new AlertDialog.Builder(ScreenActivity.this)
+                                .setMessage("Are you sure you want to log out?")
+                                .setNegativeButton("No", null)
+                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        navigateBackToLoginActivity(false);
+                                    }
+                                });
+                        builder.create().show();
                         break;
                     case R.id.ic_about_us:
                         break;
