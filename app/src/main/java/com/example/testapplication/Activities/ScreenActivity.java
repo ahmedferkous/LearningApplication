@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
@@ -22,9 +23,9 @@ import android.widget.Toast;
 import com.example.testapplication.Application.AppContainer;
 import com.example.testapplication.Application.MyApplication;
 import com.example.testapplication.Fragments.FragmentNotes;
+import com.example.testapplication.Fragments.FragmentTests;
 import com.example.testapplication.Items.LoginResponse;
 import com.example.testapplication.R;
-import com.example.testapplication.ViewModels.LessonItemViewModel;
 import com.example.testapplication.ViewModels.LoginViewModel;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -34,6 +35,10 @@ public class ScreenActivity extends AppCompatActivity {
     private static final String TAG = "ScreenActivity";
     public static final String USER_ID_KEY = "user_id_key";
     public static final String MD5_PASSWORD_KEY = "md5_password_key";
+    public static final String FRAGMENT_STATE = "fragment_state";
+    public static final String FRAGMENT_NOTES = "fragment_notes";
+    public static final String FRAGMENT_TESTS = "fragment_tests";
+    public static final String FRAGMENT_FEEDBACK = "fragment_feedback";
 
     private DrawerLayout drawer;
     private NavigationView navigationView;
@@ -124,6 +129,7 @@ public class ScreenActivity extends AppCompatActivity {
                         transactToNotes();
                         break;
                     case R.id.ic_tests:
+                        transactToTests();
                         break;
                     case R.id.ic_feedback:
                         break;
@@ -153,13 +159,13 @@ public class ScreenActivity extends AppCompatActivity {
     }
 
     private void initBottomNavigationView() {
-        bottomNavigationView.setSelectedItemId(R.id.notes);
         transactToNotes();
-
         bottomNavigationView.setItemOnTouchListener(R.id.notes, new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                transactToNotes();
+                if (buttonReleased(event)) {
+                    transactToNotes();
+                }
                 return true;
             }
         });
@@ -167,6 +173,9 @@ public class ScreenActivity extends AppCompatActivity {
         bottomNavigationView.setItemOnTouchListener(R.id.tests, new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
+                if (buttonReleased(event)) {
+                    transactToTests();
+                }
                 return true;
             }
         });
@@ -179,9 +188,22 @@ public class ScreenActivity extends AppCompatActivity {
         });
     }
 
+    private boolean buttonReleased(MotionEvent event) {
+        return event.getAction() == MotionEvent.ACTION_UP;
+    }
+
     private void transactToNotes() {
+        bottomNavigationView.setSelectedItemId(R.id.notes);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, new FragmentNotes());
+        transaction.commit();
+    }
+
+    private void transactToTests() {
+        Log.d(TAG, "transactToTests: ");
+        bottomNavigationView.setSelectedItemId(R.id.tests);
+        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
+        transaction.replace(R.id.fragmentContainer, new FragmentTests());
         transaction.commit();
     }
 }

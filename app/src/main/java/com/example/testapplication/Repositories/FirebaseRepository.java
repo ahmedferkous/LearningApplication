@@ -1,20 +1,22 @@
 package com.example.testapplication.Repositories;
 
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.lifecycle.MutableLiveData;
 
-import com.example.testapplication.Adapters.EventListenerAdapter;
 import com.example.testapplication.Interfaces.OnRetrievedImageUris;
 import com.example.testapplication.Items.LessonItem;
+import com.example.testapplication.Items.Question;
+import com.example.testapplication.Items.TestItem;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.FirebaseFirestoreException;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -26,34 +28,135 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.example.testapplication.Items.LessonItem.DATE_POSTED;
+import static com.example.testapplication.Items.LessonItem.DIFFICULTY;
+import static com.example.testapplication.Items.LessonItem.LESSON_DESCRIPTION;
+import static com.example.testapplication.Items.LessonItem.LESSON_NAME;
+import static com.example.testapplication.Items.LessonItem.NOTES;
+import static com.example.testapplication.Items.Question.POSITION;
+import static com.example.testapplication.Items.Question.QUESTION;
+import static com.example.testapplication.Items.Question.TYPE;
+import static com.example.testapplication.Items.TestItem.QUESTIONS;
+import static com.example.testapplication.Items.TestItem.TESTS;
+import static com.example.testapplication.Items.TestItem.TEST_DESCRIPTION;
+import static com.example.testapplication.Items.TestItem.TEST_NAME;
+import static com.example.testapplication.Items.TestItem.USERS_ASSIGNED;
+
 public class FirebaseRepository  {
     private static final String TAG = "FirebaseRepository";
 
-    public static final String NOTES = "notes";
-    public static final String DATE_POSTED = "datePosted";
-    public static final String DIFFICULTY = "difficulty";
-    public static final String LESSON_DESCRIPTION = "lessonDescription";
-    public static final String LESSON_NAME = "lessonName";
-
+    private List<TestItem> testItemList;
     private List<LessonItem> lessonItemList;
     private final MutableLiveData<List<LessonItem>> lessonItemListMutableLiveData;
-    private final FirebaseFirestore firebaseFirestore;
+    private final MutableLiveData<List<TestItem>> testItemListMutableLiveData;
+    private FirebaseFirestore firebaseFirestore;
 
     public FirebaseRepository() {
         this.lessonItemListMutableLiveData = new MutableLiveData<>();
-        firebaseFirestore = FirebaseFirestore.getInstance();
+        this.testItemListMutableLiveData = new MutableLiveData<>();
+    }
+
+    private void initDb() {
+        if (firebaseFirestore == null) {
+            firebaseFirestore = FirebaseFirestore.getInstance();
+        }
+    }
+
+    public MutableLiveData<List<TestItem>> getTestItemListMutableLiveData(String userID) {
+        initDb();
+        CollectionReference testsCollectionReference = firebaseFirestore.collection(TESTS);
+        testsCollectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+            @Override
+            public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                Log.d(TAG, "onEvent: ER>#$IH&%#");
+                testItemList = new ArrayList<>();
+                List<DocumentSnapshot> testItemDocumentSnapshotList = value.getDocuments();
+                for (int i = 0; i < testItemDocumentSnapshotList.size(); i++) {
+                    DocumentSnapshot testItemDocument = testItemDocumentSnapshotList.get(i);
+                    String documentId = testItemDocument.getId();
+
+                    TestItem testItem = new TestItem();
+
+                    Map<String, Object> testItemDocumentMap = testItemDocument.getData();
+                    testItem.setTestName((String) testItemDocumentMap.get(TEST_NAME));
+                    testItem.setTestDescription((String) testItemDocumentMap.get(TEST_DESCRIPTION));
+
+                    DocumentReference testDocumentReference = testsCollectionReference.document(documentId);
+                    CollectionReference questionsCollectionReference = testDocumentReference.collection(QUESTIONS);
+                    DocumentReference userAssignedDocumentReference = testDocumentReference.collection(USERS_ASSIGNED).document(userID);
+
+                    questionsCollectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
+                        @Override
+                        public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
+                            ArrayList<Question> questionsList = new ArrayList<>();
+                            List<DocumentSnapshot> questionsDocumentSnapshotList = value.getDocuments();
+
+                            for (int j = 0; j < questionsDocumentSnapshotList.size(); j++) {
+                                DocumentSnapshot questionDocument = questionsDocumentSnapshotList.get(j);
+
+                                Question questionItem = null;
+
+                                Map<String, Object> questionDocumentMap = questionDocument.getData();
+                                String type = (String) questionDocumentMap.get(TYPE);
+                                String question = (String) questionDocumentMap.get(QUESTION);
+                                Long position = (Long) questionDocumentMap.get(POSITION);
+
+                                switch (type) {
+                                    case Question.ShortAnswer.SHORT_ANSWER:
+                                        String correctShortAnswer = (String) questionDocumentMap.get(Question.ShortAnswer.CORRECT_ANSWER);
+                                        questionItem = new Question.ShortAnswer(type, question, position, correctShortAnswer);
+                                        break;
+                                    case Question.MultipleChoice.MULTIPLE_CHOICE:
+                                        String correctMultipleChoice = (String) questionDocumentMap.get(Question.MultipleChoice.CORRECT_ANSWER);
+                                        ArrayList<String> multipleChoiceChoices = (ArrayList<String>) questionDocumentMap.get(Question.MultipleChoice.CHOICES);
+                                        questionItem = new Question.MultipleChoice(type, question, position, multipleChoiceChoices, correctMultipleChoice);
+                                        break;
+                                    case Question.CheckList.CHECKLIST:
+                                        ArrayList<String> checklistChoices = (ArrayList<String>) questionDocumentMap.get(Question.CheckList.CHOICES);
+                                        ArrayList<String> correctAnswers = (ArrayList<String>) questionDocumentMap.get(Question.CheckList.CORRECT_ANSWERS);
+                                        questionItem = new Question.CheckList(type, question, position, checklistChoices, correctAnswers);
+                                        break;
+                                    default:
+                                        break;
+                                }
+                                if (questionItem != null) {
+                                    questionsList.add(questionItem);
+                                }
+                            }
+                            testItem.setQuestions(questionsList);
+                            userAssignedDocumentReference.addSnapshotListener(new EventListener<DocumentSnapshot>() {
+                                @Override
+                                public void onEvent(@Nullable DocumentSnapshot value, @Nullable FirebaseFirestoreException error) {
+                                    Map<String, Object> userAssignedDocumentMap = value.getData();
+                                    Map<Integer, Object> answeredQuestions = (Map<Integer, Object>) userAssignedDocumentMap.get(TestItem.AssignedUser.ANSWERED_QUESTIONS);
+                                    String progress = (String) userAssignedDocumentMap.get(TestItem.AssignedUser.PROGRESS);
+                                    TestItem.AssignedUser assignedUser = new TestItem.AssignedUser(answeredQuestions, progress);
+
+                                    testItem.setAssignedUser(assignedUser);
+                                    testItemList.add(testItem);
+                                    if (testItemList.size() == testItemDocumentSnapshotList.size()) {
+                                        testItemListMutableLiveData.postValue(testItemList);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            }
+        });
+        return testItemListMutableLiveData;
     }
 
     public MutableLiveData<List<LessonItem>> getLessonItemListMutableLiveData() {
+        initDb();
         CollectionReference collectionReference = firebaseFirestore.collection(NOTES);
-        collectionReference.addSnapshotListener(new EventListenerAdapter() {
+        collectionReference.addSnapshotListener(new OnRetrievedImageUris() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
                 lessonItemList = new ArrayList<>();
                 List<DocumentSnapshot> documentSnapshotList = value.getDocuments();
 
                 for (int i = 0; i < documentSnapshotList.size(); i++) {
-                    Log.d(TAG, "onEvent: " + documentSnapshotList.size() + " " + i);
                     DocumentSnapshot c = documentSnapshotList.get(i);
                     String documentId = c.getId();
 
@@ -68,7 +171,6 @@ public class FirebaseRepository  {
                     RetrieveImage retrieveImage = new RetrieveImage(this, lessonItem, documentSnapshotList.size());
                     retrieveImage.get(documentId);
                 }
-
             }
 
             @Override
@@ -121,5 +223,6 @@ public class FirebaseRepository  {
         }
 
     }
+
 
 }

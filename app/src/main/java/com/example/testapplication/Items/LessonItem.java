@@ -5,6 +5,12 @@ import android.net.Uri;
 import java.util.ArrayList;
 
 public class LessonItem {
+    public static final String NOTES = "notes";
+    public static final String DATE_POSTED = "datePosted";
+    public static final String DIFFICULTY = "difficulty";
+    public static final String LESSON_DESCRIPTION = "lessonDescription";
+    public static final String LESSON_NAME = "lessonName";
+
     private final String uniqueDocumentId;
     private String lessonName, lessonDesc, datePosted, difficulty;
     private ArrayList<Uri> fileUris;

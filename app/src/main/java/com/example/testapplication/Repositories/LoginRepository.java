@@ -28,7 +28,9 @@ public class LoginRepository {
     private FirebaseFirestore db;
 
     public void initFirebase() {
-        db = FirebaseFirestore.getInstance();
+        if (db == null) {
+            db = FirebaseFirestore.getInstance();
+        }
     }
 
     public MutableLiveData<LoginResponse> loginWithData(String userID, String password) {

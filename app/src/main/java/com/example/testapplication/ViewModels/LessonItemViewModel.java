@@ -12,13 +12,11 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.List;
 
 public class LessonItemViewModel extends ViewModel {
-    private static final String TAG = "LessonItemViewModel";
-
     private final MutableLiveData<List<LessonItem>> lessonItemListMutableLiveData;
     private final FirebaseRepository repository;
 
-    public LessonItemViewModel() {
-        repository = new FirebaseRepository();
+    public LessonItemViewModel(FirebaseRepository repository) {
+        this.repository = repository;
         lessonItemListMutableLiveData = repository.getLessonItemListMutableLiveData();
     }
 

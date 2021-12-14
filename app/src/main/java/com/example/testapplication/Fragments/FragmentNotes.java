@@ -16,6 +16,8 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.testapplication.Adapters.LessonItemAdapter;
+import com.example.testapplication.Application.AppContainer;
+import com.example.testapplication.Application.MyApplication;
 import com.example.testapplication.Items.LessonItem;
 import com.example.testapplication.R;
 import com.example.testapplication.ViewModels.LessonItemViewModel;
@@ -39,6 +41,7 @@ public class FragmentNotes extends Fragment {
             @Override
             public void onChanged(List<LessonItem> lessonItems) {
                 adapter.setLessonItems((ArrayList<LessonItem>) lessonItems);
+                Log.d(TAG, "onChanged: " + lessonItems.size());
             }
         });
 
@@ -46,7 +49,8 @@ public class FragmentNotes extends Fragment {
     }
 
     private void initViews(View view) {
-        lessonItemViewModel = new ViewModelProvider(requireActivity()).get(LessonItemViewModel.class);
+        AppContainer appContainer = ((MyApplication) getActivity().getApplication()).appContainer;
+        lessonItemViewModel = new ViewModelProvider(requireActivity(), appContainer.lessonItemViewModelFactory).get(LessonItemViewModel.class);
         RecyclerView recView = view.findViewById(R.id.recView);
         recView.setLayoutManager(new LinearLayoutManager(getContext()));
         adapter = new LessonItemAdapter(getContext());
