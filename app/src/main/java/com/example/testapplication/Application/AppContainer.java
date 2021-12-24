@@ -8,7 +8,7 @@ import com.example.testapplication.ViewModels.ViewModelFactories.TestItemViewMod
 
 public class AppContainer {
     private final LoginRepository loginRepository = new LoginRepository();
-    private final FirebaseRepository firebaseRepository = new FirebaseRepository();
+    public final FirebaseRepository firebaseRepository = new FirebaseRepository();
     public LoginViewModelFactory loginViewModelFactory = new LoginViewModelFactory(loginRepository);
     public LessonItemViewModelFactory lessonItemViewModelFactory = new LessonItemViewModelFactory(firebaseRepository);
     public TestItemViewModelFactory testItemViewModelFactory = new TestItemViewModelFactory(firebaseRepository);

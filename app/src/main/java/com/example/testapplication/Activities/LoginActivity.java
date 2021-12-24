@@ -84,7 +84,6 @@ public class LoginActivity extends AppCompatActivity {
                 loginViewModel.userID.setValue(strippedUserID);
                 loginViewModel.password.setValue(strippedPassword);
 
-                btnSignIn.setBackgroundColor(getResources().getColor(R.color.unavailable));
                 btnSignIn.setClickable(false);
 
                 MutableLiveData<LoginResponse> response = loginViewModel.login();
@@ -111,7 +110,6 @@ public class LoginActivity extends AppCompatActivity {
                             default:
                                 break;
                         }
-                        btnSignIn.setBackgroundColor(getResources().getColor(R.color.lightBlue));
                         btnSignIn.setClickable(true);
                         response.removeObserver(this);
                     }
@@ -137,8 +135,8 @@ public class LoginActivity extends AppCompatActivity {
 
     private void navigateToScreenActivity(String userID, String passwordMD5) {
         Intent screenActivityIntent = new Intent(this, ScreenActivity.class);
-        screenActivityIntent.putExtra(ScreenActivity.USER_ID_KEY, userID);
-        screenActivityIntent.putExtra(ScreenActivity.MD5_PASSWORD_KEY, passwordMD5);
+        screenActivityIntent.putExtra(LoginClass.USER_ID_KEY, userID);
+        screenActivityIntent.putExtra(LoginClass.MD5_PASSWORD_KEY, passwordMD5);
         screenActivityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(screenActivityIntent);
     }

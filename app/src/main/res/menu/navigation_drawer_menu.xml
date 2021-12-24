@@ -6,17 +6,17 @@
 
         <item
             android:title="Notes"
-            android:id="@+id/ic_notes"
+            android:id="@+id/notes"
             android:icon="@drawable/ic_learning"/>
 
         <item
             android:title="Tests"
-            android:id="@+id/ic_tests"
+            android:id="@+id/tests"
             android:icon="@drawable/ic_test"/>
 
         <item
             android:title="Feedback"
-            android:id="@+id/ic_feedback"
+            android:id="@+id/feedback"
             android:icon="@drawable/ic_feedback"/>
     </group>
 

@@ -15,9 +15,9 @@ public class LessonItemViewModel extends ViewModel {
     private final MutableLiveData<List<LessonItem>> lessonItemListMutableLiveData;
     private final FirebaseRepository repository;
 
-    public LessonItemViewModel(FirebaseRepository repository) {
-        this.repository = repository;
-        lessonItemListMutableLiveData = repository.getLessonItemListMutableLiveData();
+    public LessonItemViewModel(FirebaseRepository firebaseRepository) {
+        this.repository = firebaseRepository;
+        lessonItemListMutableLiveData = firebaseRepository.getLessonItemListMutableLiveData();
     }
 
     public MutableLiveData<List<LessonItem>> getLiveLessonItemData() {

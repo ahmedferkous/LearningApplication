@@ -10,6 +10,8 @@ import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 
+import android.app.Activity;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,81 +35,36 @@ import com.google.android.material.navigation.NavigationView;
 
 public class ScreenActivity extends AppCompatActivity {
     private static final String TAG = "ScreenActivity";
-    public static final String USER_ID_KEY = "user_id_key";
-    public static final String MD5_PASSWORD_KEY = "md5_password_key";
-    public static final String FRAGMENT_STATE = "fragment_state";
-    public static final String FRAGMENT_NOTES = "fragment_notes";
-    public static final String FRAGMENT_TESTS = "fragment_tests";
-    public static final String FRAGMENT_FEEDBACK = "fragment_feedback";
 
     private DrawerLayout drawer;
     private NavigationView navigationView;
     private BottomNavigationView bottomNavigationView;
     private MaterialToolbar toolbar;
 
+    private LoginClass loginClass;
     private LoginViewModel loginViewModel;
-
-    /*
-    @Override
-    public void onBackPressed() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this)
-                .setMessage("Exit application?")
-                .setNegativeButton("No", null)
-                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        android.os.Process.killProcess(android.os.Process.myPid());
-                    }
-                });
-        builder.create().show();
-    }
-     */
+    private AppContainer appContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_screen);
         initViews();
-        initNavigationView();
-        initBottomNavigationView();
 
         Intent incomingIntent = getIntent();
         if (incomingIntent != null) {
-            String userID = incomingIntent.getStringExtra(USER_ID_KEY);
-            String passwordMD5 = incomingIntent.getStringExtra(MD5_PASSWORD_KEY);
-            if (userID != null && passwordMD5 != null) {
-                setupLoginChangeCheck(userID, passwordMD5);
-            }
+            loginClass = new LoginClass(incomingIntent, loginViewModel);
+            loginClass.setupLoginChangeCheck(this);
+            appContainer.firebaseRepository.initDb(loginViewModel.userID.getValue());
+
+            initNavigationView();
+            initBottomNavigationView();
         }
-    }
 
-    private void setupLoginChangeCheck(String userID, String passwordMD5) {
-        loginViewModel.userID.setValue(userID);
-        loginViewModel.password.setValue(passwordMD5);
-
-        MutableLiveData<LoginResponse> response = loginViewModel.checkLoginData();
-        response.observe(this, new Observer<LoginResponse>() {
-            @Override
-            public void onChanged(LoginResponse loginResponse) {
-                Log.d(TAG, "onChanged: " + loginResponse.getResponse());
-                if (loginResponse.getResponse() == LoginResponse.FORCED_SIGN_OUT) {
-                    navigateBackToLoginActivity(true);
-                }
-            }
-        });
-    }
-
-    private void navigateBackToLoginActivity(boolean forced) {
-        if (forced) {
-            Toast.makeText(this, "Re-login required.", Toast.LENGTH_SHORT).show();
-        }
-        Intent loginActivityIntent = new Intent(this, LoginActivity.class);
-        loginActivityIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(loginActivityIntent);
     }
 
     private void initViews() {
-        AppContainer appContainer = ((MyApplication) getApplication()).appContainer;
+        appContainer = ((MyApplication) getApplication()).appContainer;
         loginViewModel = new ViewModelProvider(this, appContainer.loginViewModelFactory).get(LoginViewModel.class);
         toolbar = findViewById(R.id.toolbar);
         drawer = findViewById(R.id.drawer);
@@ -124,35 +81,37 @@ public class ScreenActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.ic_notes:
-                        transactToNotes();
-                        break;
-                    case R.id.ic_tests:
-                        transactToTests();
-                        break;
-                    case R.id.ic_feedback:
-                        break;
-                    case R.id.ic_settings:
-                        break;
-                    case R.id.ic_logout:
-                        AlertDialog.Builder builder = new AlertDialog.Builder(ScreenActivity.this)
-                                .setMessage("Are you sure you want to log out?")
-                                .setNegativeButton("No", null)
-                                .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        navigateBackToLoginActivity(false);
-                                    }
-                                });
-                        builder.create().show();
-                        break;
-                    case R.id.ic_about_us:
-                        break;
-                    case R.id.ic_licenses:
-                        break;
+                if (!(bottomNavigationView.getSelectedItemId() == item.getItemId())) {
+                    Log.d(TAG, "onNavigationItemSelected: " + bottomNavigationView.getSelectedItemId() + " " + item.getItemId());
+                    switch (item.getItemId()) {
+                        case R.id.notes:
+                            transactToNotes();
+                            break;
+                        case R.id.tests:
+                            transactToTests();
+                            break;
+                        case R.id.feedback:
+                            break;
+                        case R.id.ic_settings:
+                            break;
+                        case R.id.ic_logout:
+                            AlertDialog.Builder builder = new AlertDialog.Builder(ScreenActivity.this)
+                                    .setMessage("Are you sure you want to log out?")
+                                    .setNegativeButton("No", null)
+                                    .setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialog, int which) {
+                                            loginClass.navigateBackToLoginActivity(ScreenActivity.this, false);
+                                        }
+                                    });
+                            builder.create().show();
+                            break;
+                        case R.id.ic_about_us:
+                            break;
+                        case R.id.ic_licenses:
+                            break;
+                    }
                 }
-
                 return true;
             }
         });
@@ -163,7 +122,7 @@ public class ScreenActivity extends AppCompatActivity {
         bottomNavigationView.setItemOnTouchListener(R.id.notes, new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (buttonReleased(event)) {
+                if (buttonReleased(event) && !(bottomNavigationView.getSelectedItemId() == R.id.notes)) {
                     transactToNotes();
                 }
                 return true;
@@ -173,7 +132,7 @@ public class ScreenActivity extends AppCompatActivity {
         bottomNavigationView.setItemOnTouchListener(R.id.tests, new View.OnTouchListener() {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                if (buttonReleased(event)) {
+                if (buttonReleased(event) && !(bottomNavigationView.getSelectedItemId() == R.id.tests)) {
                     transactToTests();
                 }
                 return true;
@@ -200,10 +159,10 @@ public class ScreenActivity extends AppCompatActivity {
     }
 
     private void transactToTests() {
-        Log.d(TAG, "transactToTests: ");
         bottomNavigationView.setSelectedItemId(R.id.tests);
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.replace(R.id.fragmentContainer, new FragmentTests());
         transaction.commit();
     }
+
 }

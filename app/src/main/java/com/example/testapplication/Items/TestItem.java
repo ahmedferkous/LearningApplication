@@ -1,9 +1,40 @@
 package com.example.testapplication.Items;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import java.util.ArrayList;
 import java.util.Map;
 
-public class TestItem {
+public class TestItem implements Parcelable {
+    protected TestItem(Parcel in) {
+        testName = in.readString();
+        testDescription = in.readString();
+    }
+
+    public static final Creator<TestItem> CREATOR = new Creator<TestItem>() {
+        @Override
+        public TestItem createFromParcel(Parcel in) {
+            return new TestItem(in);
+        }
+
+        @Override
+        public TestItem[] newArray(int size) {
+            return new TestItem[size];
+        }
+    };
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(testName);
+        dest.writeString(testDescription);
+    }
+
     public static final String TESTS = "tests";
     public static final String TEST_NAME = "testName";
     public static final String TEST_DESCRIPTION = "testDescription";

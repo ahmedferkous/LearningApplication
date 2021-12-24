@@ -11,7 +11,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_centerInParent="true"
-        android:background="@color/slightWhite"
         app:cardCornerRadius="5dp">
 
         <LinearLayout
@@ -29,7 +28,6 @@
                     android:id="@+id/edtTxtUserID"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/typwhite"
                     android:fontFamily="@font/montserrat"
                     android:gravity="start|center_vertical"
                     android:scrollbars="horizontal"
@@ -46,7 +44,6 @@
                     android:id="@+id/edtTxtPassword"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@color/typwhite"
                     android:fontFamily="@font/montserrat"
                     android:gravity="start|center_vertical"
                     android:inputType="textPassword"
@@ -87,9 +84,8 @@
             <Button
                 android:id="@+id/btnSignIn"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
+                android:layout_height="60dp"
                 android:layout_marginTop="12dp"
-                android:background="@color/lightBlue"
                 android:text="Sign in"
                 android:textColor="@color/white" />
 

@@ -17,7 +17,7 @@
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/lightBlue"
+            android:background="#232F34"
             android:elevation="4dp"
             app:titleTextColor="@color/white" />
 

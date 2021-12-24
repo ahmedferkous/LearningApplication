@@ -45,6 +45,7 @@ import static com.example.testapplication.Items.TestItem.USERS_ASSIGNED;
 public class FirebaseRepository  {
     private static final String TAG = "FirebaseRepository";
 
+    private String userID;
     private List<TestItem> testItemList;
     private List<LessonItem> lessonItemList;
     private final MutableLiveData<List<LessonItem>> lessonItemListMutableLiveData;
@@ -56,21 +57,21 @@ public class FirebaseRepository  {
         this.testItemListMutableLiveData = new MutableLiveData<>();
     }
 
-    private void initDb() {
-        if (firebaseFirestore == null) {
-            firebaseFirestore = FirebaseFirestore.getInstance();
-        }
+    public void initDb(String userID) {
+        firebaseFirestore = FirebaseFirestore.getInstance();
+        this.userID = userID;
     }
 
-    public MutableLiveData<List<TestItem>> getTestItemListMutableLiveData(String userID) {
-        initDb();
+    public MutableLiveData<List<TestItem>> getTestItemListMutableLiveData() {
+        Log.d(TAG, "onEvent: EJKWI)QHE#H$#*@");
         CollectionReference testsCollectionReference = firebaseFirestore.collection(TESTS);
         testsCollectionReference.addSnapshotListener(new EventListener<QuerySnapshot>() {
             @Override
             public void onEvent(@Nullable QuerySnapshot value, @Nullable FirebaseFirestoreException error) {
-                Log.d(TAG, "onEvent: ER>#$IH&%#");
                 testItemList = new ArrayList<>();
                 List<DocumentSnapshot> testItemDocumentSnapshotList = value.getDocuments();
+
+
                 for (int i = 0; i < testItemDocumentSnapshotList.size(); i++) {
                     DocumentSnapshot testItemDocument = testItemDocumentSnapshotList.get(i);
                     String documentId = testItemDocument.getId();
@@ -148,7 +149,7 @@ public class FirebaseRepository  {
     }
 
     public MutableLiveData<List<LessonItem>> getLessonItemListMutableLiveData() {
-        initDb();
+        Log.d(TAG, "onEvent: ABCDEF");
         CollectionReference collectionReference = firebaseFirestore.collection(NOTES);
         collectionReference.addSnapshotListener(new OnRetrievedImageUris() {
             @Override

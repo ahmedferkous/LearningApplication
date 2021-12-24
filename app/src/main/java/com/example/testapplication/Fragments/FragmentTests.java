@@ -31,7 +31,6 @@ import java.util.List;
 public class FragmentTests extends Fragment {
     private static final String TAG = "FragmentTests";
 
-    private String userID;
     private RecyclerView recView;
     private TestItemAdapter adapter;
     private TestItemViewModel testItemViewModel;
@@ -41,12 +40,12 @@ public class FragmentTests extends Fragment {
         View view = inflater.inflate(R.layout.fragment_tests, container, false);
         initViews(view);
 
-        MutableLiveData<List<TestItem>> response = testItemViewModel.getLiveTestItemData(userID);
+        MutableLiveData<List<TestItem>> response = testItemViewModel.getLiveTestItemData();
         response.observe(getViewLifecycleOwner(), new Observer<List<TestItem>>() {
             @Override
             public void onChanged(List<TestItem> testItems) {
-                Log.d(TAG, "onChanged: " + testItems.size());
                 adapter.setTestItems((ArrayList<TestItem>) testItems);
+                Log.d(TAG, "onChanged: " + testItems.size());
             }
         });
 
@@ -55,11 +54,11 @@ public class FragmentTests extends Fragment {
 
     private void initViews(View view) {
         AppContainer appContainer = ((MyApplication) getActivity().getApplication()).appContainer;
+        LoginViewModel loginViewModel = new ViewModelProvider(requireActivity(), appContainer.loginViewModelFactory).get(LoginViewModel.class);
         testItemViewModel = new ViewModelProvider(requireActivity(), appContainer.testItemViewModelFactory).get(TestItemViewModel.class);
-        userID = new ViewModelProvider(requireActivity(), appContainer.loginViewModelFactory).get(LoginViewModel.class).userID.getValue();
         recView = view.findViewById(R.id.recView);
         recView.setLayoutManager(new LinearLayoutManager(getContext()));
-        adapter = new TestItemAdapter(getContext());
+        adapter = new TestItemAdapter(loginViewModel, getContext());
         recView.setAdapter(adapter);
     }
 }

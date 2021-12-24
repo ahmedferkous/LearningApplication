@@ -1,6 +1,7 @@
 package com.example.testapplication.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -12,8 +13,11 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.testapplication.Activities.LoginClass;
+import com.example.testapplication.Activities.TestActivity;
 import com.example.testapplication.Items.TestItem;
 import com.example.testapplication.R;
+import com.example.testapplication.ViewModels.LoginViewModel;
 import com.google.android.material.progressindicator.CircularProgressIndicator;
 
 import org.w3c.dom.Text;
@@ -24,9 +28,11 @@ public class TestItemAdapter extends RecyclerView.Adapter<TestItemAdapter.ViewHo
     private static final String TAG = "TestItemAdapter";
 
     private ArrayList<TestItem> testItems = new ArrayList<>();
+    private final LoginViewModel loginViewModel;
     private final Context context;
 
-    public TestItemAdapter(Context context) {
+    public TestItemAdapter(LoginViewModel loginViewModel, Context context) {
+        this.loginViewModel = loginViewModel;
         this.context = context;
     }
 
@@ -54,7 +60,11 @@ public class TestItemAdapter extends RecyclerView.Adapter<TestItemAdapter.ViewHo
         holder.parent.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.d(TAG, "onClick: " + boundTestItem.getQuestions().get(0).getType());
+                Intent testActivityIntent = new Intent(context, TestActivity.class);
+                testActivityIntent.putExtra(LoginClass.USER_ID_KEY, loginViewModel.userID.getValue());
+                testActivityIntent.putExtra(LoginClass.MD5_PASSWORD_KEY, loginViewModel.password.getValue());
+                testActivityIntent.putExtra(TestActivity.TEST_ITEM_KEY, boundTestItem);
+                context.startActivity(testActivityIntent);
             }
         });
     }
